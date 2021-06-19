@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    </head>
+<body>
+    <h1>Personas</h1>
+    <hr>
+    <form id="frm"> 
+        <input type ="hidden" value ="" name="Id" id="Id" > 
+        <label>Nombre:</label>
+        <input type = "text" name="Nombre" id ="Nombre">
+        <br>
+        <label>Edad:</label>
+        <input type = "text" name="Edad" id="Edad">
+        <br>
+        <input type="button" value="Guardar" onclick="Guardar();">
+    </form>
+    <div id="divLista"></div>   
+</body>
+</html>
+
+<script>
+    var url="https://localhost:44369/api/persona";
+   Get();
+
+   function Guardar(){
+       if(document.getElementById("Id").value=""){
+           Edit();
+       }else{
+           Post();
+       }
+   }
+
+   function Post(){
+       fetch (url, {
+           method: "POST",
+           body: JSON.stringify({
+               Nombre: document.getElementById("Nombre").value,
+               Edad: document.getElementById("Edad").value
+           }),
+           headers: {
+               'Accept':"application/json", 
+               "Content-Type":"application/json"
+           }
+    }).then(function(response){
+        if(response.ok){
+            return response.text();
+        }else{
+            alert("Error al ejecutar solicitud");
+        }
+    }).then(function(Data){
+        console.log(Data);
+        Get();
+    })
+
+   }
+
+   function Delete(id){
+    
+       fetch (url, {
+           method: "DELETE",
+           body: JSON.stringify({
+               id:id
+           }),
+           headers: {
+               'Accept':"application/json", 
+               "Content-Type":"application/json"
+           }
+     }).then(function(response){
+        if(response.ok){
+            return response.text();
+        }else{
+            alert("Error al ejecutar solicitud");
+        }
+    }).then(function(Data){
+        console.log(Data);
+        Get();
+    })
+   }
+  
+
+
+   function OpenEdidt (id, Nombre, Edad){
+            document.getElementById("Id").value = id;
+            document.getElementById("Nombre").value = Nombre;
+            documento.getElementById("Edad").value = Edad;
+   }
+
+   function Edit(){
+    
+    fetch (url, {
+        method: "PUT",
+        body: JSON.stringify({
+            Id: document.getElementById("Id").value,
+            Nombre: document.getElementById("Nombre").value,
+            Edad: document.getElementById("Edad").value
+        }),
+        headers: {
+            'Accept':"application/json", 
+            "Content-Type":"application/json"
+        }
+  }).then(function(response){
+     if(response.ok){
+         return response.text();
+     }else{
+         alert("Error al ejecutar solicitud");
+     }
+ }).then(function(Data){
+     console.log(Data);
+     Get();
+     Id: document.getElementById("Id").value="";
+ })
+}
+
+   function Get(){
+       fetch(url).then(function(response){
+           return response.json();
+       }).then(function(Data){
+           document.getElementById("divLista").innerHTML="";  //Garante que divLista esteja vazia. Borrar o conteudo de div. melhorando o refresh
+           for(i=0; i<Data.length; i++){ //loop na lista
+               let divElement = document.createElement("div"); //Foi criado um objeto let divElement
+               let divSpan = document.createElement("span");
+               let divButtonDelete = document.createElement("button");
+               let divButtonEdit = document.createElement("button");
+               divSpan.innerHTML = Data[i].nombre + " : " + Data[i].edad + "  ";
+               divButtonDelete.innerHTML = "Eliminar";
+               divButtonDelete.MiID = Data[i].id;               
+               divButtonDelete.addEventListener("click", function(mibutton){
+                   Delete(mibutton.target.MiID);
+               })               
+               divButtonEdit.innerHTML = "Editar"  
+               divButtonDelete.MiID = Data[i].id;  
+               divButtonEdit.MiNombre = Data[i].nombre;
+               divButtonEdit.MiEdad = Data[i].edad;             
+               divButtonDelete.addEventListener("click", function(mibutton){
+                   OpenEdidt(mibutton.target.MiID,
+                   mibutton.target.MiNombre,
+                   mibutton.target.MiEdad
+                   );
+               })                              
+               divElement.appendChild(divSpan);
+               divElement.appendChild(divButtonDelete);
+               divElement.appendChild(divButtonEdit);                                
+               document.getElementById("divLista").appendChild(divElement);
+           }
+       })
+   }
+
+</script>
